@@ -37,7 +37,7 @@
   {
 	"name": "encrpyt",
 	"label": "Encrypt",
-	"type": "String",
+	"type": "Boolean",
 	"required": true,
 	"help": "Encrypt data that will be sent (this must be set to True if using Azure)."
   },
