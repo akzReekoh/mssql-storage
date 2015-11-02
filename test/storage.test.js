@@ -1,7 +1,3 @@
-/*
- * Just a sample code to test the storage plugin.
- * Kindly write your own unit tests for your own plugin.
- */
 'use strict';
 
 var cp     = require('child_process'),
@@ -12,7 +8,13 @@ describe('Storage', function () {
 	this.slow(5000);
 
 	after('terminate child process', function () {
-		storage.kill('SIGKILL');
+		storage.send({
+			type: 'close'
+		});
+
+		setTimeout(function () {
+			storage.kill('SIGKILL');
+		}, 3000);
 	});
 
 	describe('#spawn', function () {
