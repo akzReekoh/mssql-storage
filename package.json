@@ -1,7 +1,7 @@
 {
-  "name": "mongodb-storage",
-  "description": "MongoDB Storage Plugin for Reekoh IoT Platform.",
-  "version": "0.1.0",
+  "name": "mssql-storage",
+  "description": "MsSQL Storage Plugin for Reekoh IoT Platform.",
+  "version": "1.0.0",
   "author": "Reekoh, Inc.",
   "main": "app.js",
   "scripts": {
@@ -9,9 +9,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Reekoh/mongodb-storage"
+    "url": "https://github.com/Reekoh/mssql-storage"
   },
   "dependencies": {
+    "async": "^1.4.2",
     "is-json": "^1.2.5",
     "lodash": "^3.10.1",
     "moment": "^2.10.6",
@@ -24,6 +25,8 @@
     "gulp-jshint": "^1.11.2",
     "gulp-jsonlint": "^1.1.0",
     "gulp-plumber": "^1.0.1",
-    "node-uuid": "^1.4.3"
+    "node-uuid": "^1.4.3",
+    "mocha": "^2.3.3",
+    "should": "^7.1.1"
   }
 }
