@@ -1,67 +1,11 @@
 'use strict';
 
-var platform    = require('./platform'),
-	sql	  	    = require('mssql'),
-	moment	    = require('moment'),
-	_			= require('lodash'),
-	isJSON      = require('is-json'),
+var platform = require('./platform'),
+	sql      = require('mssql'),
+	moment   = require('moment'),
+	_        = require('lodash'),
+	isJSON   = require('is-json'),
 	tableName, parseFields, connection;
-
-/*
- * Listen for the ready event.
- */
-platform.once('ready', function (options) {
-
-	//try catch to capture parsing error in JSON.parse
-	try {
-		parseFields = JSON.parse(options.fields);
-
-		_.forEach(parseFields, function(field, key) {
-			if (field.source_field === undefined || field.source_field === null) {
-				throw( new Error('Source field is missing for ' + key + ' in MsSQL Plugin'));
-			} else if (field.data_type  && (field.data_type !== 'String' && field.data_type !== 'Integer' &&
-				field.data_type !== 'Float'  && field.data_type !== 'Boolean' &&
-				field.data_type !== 'DateTime')) {
-				throw(new Error('Invalid Data Type for ' + key + ' allowed data types are (String, Integer, Float, Boolean, DateTime) in MsSQL Plugin'));
-			}
-		});
-
-	} catch (e) {
-		console.error('Error parsing JSON field configuration for MsSQL.', e);
-		platform.handleException(e);
-		return;
-	}
-
-	tableName   = options.table;
-
-	var config = {
-		user: options.user,
-		password: options.password,
-		server: options.host,
-		database: options.database,
-		port: options.port,
-		options: {
-			encrypt: options.encrypt // Use this if you're on Windows Azure
-		}
-	};
-
-
-	connection = new sql.Connection(config, function(err) {
-		if (err) {
-			console.error('Error connecting to MsSQL.', err);
-			platform.handleException(err);
-		} else {
-			platform.log('Connected to MsSQL.');
-			platform.notifyReady(); // Need to notify parent process that initialization of this plugin is done.
-		}
-	});
-
-	connection.on('error', function(err) {
-		// ... error handler
-		console.error('Error connecting to MsSQL.', err);
-		platform.handleException(err);
-	});
-});
 
 /*
  * Listen for the data event.
@@ -73,7 +17,7 @@ platform.on('data', function (data) {
 			valueList,
 			first = true;
 
-		_.forEach(parseFields, function(field, key) {
+		_.forEach(parseFields, function (field, key) {
 
 			var datum = data[field.source_field],
 				processedDatum;
@@ -89,7 +33,7 @@ platform.on('data', function (data) {
 								processedDatum = '\'' + String(datum) + '\'';
 
 
-						} else if (field.data_type === 'Integer')  {
+						} else if (field.data_type === 'Integer') {
 
 							var intData = parseInt(datum);
 
@@ -98,7 +42,7 @@ platform.on('data', function (data) {
 							else
 								processedDatum = intData;
 
-						} else if (field.data_type === 'Float')  {
+						} else if (field.data_type === 'Float') {
 
 							var floatData = parseFloat(datum);
 
@@ -123,7 +67,7 @@ platform.on('data', function (data) {
 						} else if (field.data_type === 'DateTime') {
 
 							var dtm = new Date(datum);
-							if (!isNaN( dtm.getTime())) {
+							if (!isNaN(dtm.getTime())) {
 
 								if (field.format !== undefined)
 									processedDatum = '\'' + moment(dtm).format(field.format) + '\'';
@@ -158,11 +102,11 @@ platform.on('data', function (data) {
 			}
 
 			if (!first) {
-				valueList  = valueList  + ',' + processedDatum;
-				columnList = columnList  + ',' + key;
+				valueList = valueList + ',' + processedDatum;
+				columnList = columnList + ',' + key;
 			} else {
-				first      = false;
-				valueList  = processedDatum;
+				first = false;
+				valueList = processedDatum;
 				columnList = key;
 			}
 
@@ -170,7 +114,7 @@ platform.on('data', function (data) {
 
 		var transaction = new sql.Transaction(connection);
 
-		transaction.begin(function(transErr) {
+		transaction.begin(function (transErr) {
 			// ... error checks
 			if (transErr) {
 				console.error('Error beginning transaction for MsSQL.', transErr);
@@ -178,13 +122,13 @@ platform.on('data', function (data) {
 			} else {
 				var request = new sql.Request(transaction);
 
-				request.query('insert into ' + tableName + ' (' + columnList + ') values (' + valueList + ')', function(reqErr, queryset) {
+				request.query('insert into ' + tableName + ' (' + columnList + ') values (' + valueList + ')', function (reqErr, queryset) {
 					// ... error checks
 					if (reqErr) {
 						console.error('Error inserting data into MsSQL.', reqErr);
 						platform.handleException(reqErr);
 					} else {
-						transaction.commit(function(comErr, recordset) {
+						transaction.commit(function (comErr, recordset) {
 							// ... error checks
 							if (comErr) {
 								console.error('Error committing transaction into MsSQL.', comErr);
@@ -200,9 +144,64 @@ platform.on('data', function (data) {
 	} else {
 
 		console.error('Invalid Data not in JSON Format for MsSQL Plugin.', data);
-		platform.log('Invalid Data not in JSON Format for MsSQL Plugin.', data);
+		platform.handleException(new Error('Invalid Data not in JSON Format for MsSQL Plugin. ' + data));
 
 	}
+});
 
 
+/*
+ * Listen for the ready event.
+ */
+platform.once('ready', function (options) {
+
+	//try catch to capture parsing error in JSON.parse
+	try {
+		parseFields = JSON.parse(options.fields);
+
+		_.forEach(parseFields, function (field, key) {
+			if (field.source_field === undefined || field.source_field === null) {
+				throw( new Error('Source field is missing for ' + key + ' in MsSQL Plugin'));
+			} else if (field.data_type && (field.data_type !== 'String' && field.data_type !== 'Integer' &&
+				field.data_type !== 'Float' && field.data_type !== 'Boolean' &&
+				field.data_type !== 'DateTime')) {
+				throw(new Error('Invalid Data Type for ' + key + ' allowed data types are (String, Integer, Float, Boolean, DateTime) in MsSQL Plugin'));
+			}
+		});
+
+	} catch (e) {
+		console.error('Error parsing JSON field configuration for MsSQL.', e);
+		platform.handleException(e);
+		return;
+	}
+
+	tableName = options.table;
+
+	var config = {
+		user: options.user,
+		password: options.password,
+		server: options.host,
+		database: options.database,
+		port: options.port,
+		options: {
+			encrypt: options.encrypt // Use this if you're on Windows Azure
+		}
+	};
+
+
+	connection = new sql.Connection(config, function (err) {
+		if (err) {
+			console.error('Error connecting to MsSQL.', err);
+			platform.handleException(err);
+		} else {
+			platform.log('Connected to MsSQL.');
+			platform.notifyReady(); // Need to notify parent process that initialization of this plugin is done.
+		}
+	});
+
+	connection.on('error', function (err) {
+		// ... error handler
+		console.error('Error connecting to MsSQL.', err);
+		platform.handleException(err);
+	});
 });
