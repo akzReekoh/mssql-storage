@@ -2,8 +2,6 @@
 
 MsSQL Storage Plugin for the Reekoh IoT Platform.
 
-Uses pg npm library
-
 **Assumptions:**
 
 1. Data would be in JSON format
@@ -30,6 +28,7 @@ Uses pg npm library
    of MsSQL
 6. JSON Data is not supported as a data_type but you can save it if there is a field in MsSQL
 
+```javascript
 {
     co2_field      	 : {source_field:'co2', data_type: 'String'},
     temp_field     	 : {source_field:'temp', data_type: 'Integer'},
@@ -42,7 +41,8 @@ Uses pg npm library
 ```
 
 Sample Data:
-```
+
+```javascript
 {
   co2: '11%',
   temp: 23,
