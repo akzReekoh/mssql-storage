@@ -1,4 +1,4 @@
-# MsSQL Serve Storage
+# MsSQL Server Storage
 
 [![Build Status](https://travis-ci.org/Reekoh/mssql-storage.svg)](https://travis-ci.org/Reekoh/mssql-storage)
 ![Dependencies](https://img.shields.io/david/Reekoh/mssql-storage.svg)
