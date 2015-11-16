@@ -11,7 +11,6 @@ var _        = require('lodash'),
  * Listen for the data event.
  */
 platform.on('data', function (data) {
-
 	var columnList,
 		valueList,
 		first = true;
@@ -116,13 +115,13 @@ platform.on('data', function (data) {
 			} else {
 				var request = new sql.Request(transaction);
 				console.log('insert into ' + tableName + ' (' + columnList + ') values (' + valueList + ')');
-				request.query('insert into ' + tableName + ' (' + columnList + ') values (' + valueList + ')', function (reqErr, queryset) {
+				request.query('insert into ' + tableName + ' (' + columnList + ') values (' + valueList + ')', function (reqErr) {
 					// ... error checks
 					if (reqErr) {
 						console.error('Error inserting data into MsSQL.', reqErr);
 						platform.handleException(reqErr);
 					} else {
-						transaction.commit(function (comErr, recordset) {
+						transaction.commit(function (comErr) {
 							// ... error checks
 							if (comErr) {
 								console.error('Error committing transaction into MsSQL.', comErr);
