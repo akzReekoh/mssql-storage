@@ -1,4 +1,4 @@
-# MsSQL Storage Plugin
+# MsSQL Serve Storage
 
 MsSQL Storage Plugin for the Reekoh IoT Platform.
 
@@ -30,13 +30,34 @@ MsSQL Storage Plugin for the Reekoh IoT Platform.
 
 ```javascript
 {
-    co2_field      	 : {source_field:'co2', data_type: 'String'},
-    temp_field     	 : {source_field:'temp', data_type: 'Integer'},
-    quality_field  	 : {source_field:'quality', data_type: 'Float'},
-    metadata_field 	 : {source_field:'metadata', data_type: 'JSON'},
-    reading_time_field : {source_field:'reading_time', data_type: 'DateTime', format: 'yyyy-MM-ddTHH:mm:ss'},
-    random_data_field  : {source_field:'random_data'},
-    is_normal_field    : {source_field:'is_normal', data_type: 'Boolean'}
+  "co2_field": {
+	"source_field": "co2",
+	"data_type": "String"
+  },
+  "temp_field": {
+	"source_field": "temp",
+	"data_type": "Integer"
+  },
+  "quality_field": {
+	"source_field": "quality",
+	"data_type": "Float"
+  },
+  "metadata_field": {
+	"source_field": "metadata",
+	"data_type": "JSON"
+  },
+  "reading_time_field": {
+	"source_field": "reading_time",
+	"data_type": "DateTime",
+	"format": "yyyy-MM-ddTHH:mm:ss"
+  },
+  "random_data_field": {
+	"source_field": "random_data"
+  },
+  "is_normal_field": {
+	"source_field": "is_normal",
+	"data_type": "Boolean"
+  }
 }
 ```
 
@@ -54,7 +75,7 @@ Sample Data:
 }
 ```
 
-Elastic Search Fields:
+MS SQL Fields:
 
 Type Field mapping |
 -------------------|
