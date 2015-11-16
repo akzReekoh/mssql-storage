@@ -11,7 +11,6 @@ var _        = require('lodash'),
  * Listen for the data event.
  */
 platform.on('data', function (data) {
-
 	var columnList,
 		valueList,
 		first = true;
@@ -116,13 +115,13 @@ platform.on('data', function (data) {
 			} else {
 				var request = new sql.Request(transaction);
 				console.log('insert into ' + tableName + ' (' + columnList + ') values (' + valueList + ')');
-				request.query('insert into ' + tableName + ' (' + columnList + ') values (' + valueList + ')', function (reqErr, queryset) {
+				request.query('insert into ' + tableName + ' (' + columnList + ') values (' + valueList + ')', function (reqErr) {
 					// ... error checks
 					if (reqErr) {
 						console.error('Error inserting data into MsSQL.', reqErr);
 						platform.handleException(reqErr);
 					} else {
-						transaction.commit(function (comErr, recordset) {
+						transaction.commit(function (comErr) {
 							// ... error checks
 							if (comErr) {
 								console.error('Error committing transaction into MsSQL.', comErr);
@@ -136,6 +135,25 @@ platform.on('data', function (data) {
 	});
 });
 
+/*
+ * Event to listen to in order to gracefully release all resources bound to this service.
+ */
+platform.on('close', function () {
+	var domain = require('domain');
+	var d = domain.create();
+
+	d.once('error', function (error) {
+		console.error(error);
+		platform.handleException(error);
+		platform.notifyClose();
+	});
+
+	d.run(function () {
+		connection.close();
+		platform.notifyClose();
+		d.exit();
+	});
+});
 
 /*
  * Listen for the ready event.
@@ -162,13 +180,11 @@ platform.once('ready', function (options) {
 		} else
 			callback();
 	}, function (e) {
-
 		if (e) {
 			console.error('Error parsing JSON field configuration for MsSQL.', e);
 			platform.handleException(e);
 			return;
 		}
-
 
 		tableName = options.table;
 
@@ -194,7 +210,6 @@ platform.once('ready', function (options) {
 		});
 
 		connection.on('error', function (err) {
-			// ... error handler
 			console.error('Error connecting to MsSQL.', err);
 			platform.handleException(err);
 		});
