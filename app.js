@@ -136,6 +136,25 @@ platform.on('data', function (data) {
 	});
 });
 
+/*
+ * Event to listen to in order to gracefully release all resources bound to this service.
+ */
+platform.on('close', function () {
+	var domain = require('domain');
+	var d = domain.create();
+
+	d.once('error', function (error) {
+		console.error(error);
+		platform.handleException(error);
+		platform.notifyClose();
+	});
+
+	d.run(function () {
+		connection.close();
+		platform.notifyClose();
+		d.exit();
+	});
+});
 
 /*
  * Listen for the ready event.
@@ -162,13 +181,11 @@ platform.once('ready', function (options) {
 		} else
 			callback();
 	}, function (e) {
-
 		if (e) {
 			console.error('Error parsing JSON field configuration for MsSQL.', e);
 			platform.handleException(e);
 			return;
 		}
-
 
 		tableName = options.table;
 
@@ -194,7 +211,6 @@ platform.once('ready', function (options) {
 		});
 
 		connection.on('error', function (err) {
-			// ... error handler
 			console.error('Error connecting to MsSQL.', err);
 			platform.handleException(err);
 		});
