@@ -1,6 +1,7 @@
 'use strict';
 
-var sql      = require('mssql'),
+var _        = require('lodash'),
+	sql      = require('mssql'),
 	async    = require('async'),
 	moment   = require('moment'),
 	platform = require('./platform'),
@@ -24,12 +25,10 @@ platform.on('data', function (data) {
 			if (field.data_type) {
 				try {
 					if (field.data_type === 'String') {
-						try {
-							processedDatum = '\'' + JSON.stringify(datum) + '\'';
-						}
-						catch (e) {
-							processedDatum = '\'' + String(datum) + '\'';
-						}
+						if (_.isPlainObject(datum))
+							processedDatum = JSON.stringify(datum);
+						else
+							processedDatum = '\'' + datum + '\'';
 					} else if (field.data_type === 'Integer') {
 
 						var intData = parseInt(datum);
@@ -75,28 +74,22 @@ platform.on('data', function (data) {
 					if (typeof datum === 'number')
 						processedDatum = datum;
 					else {
-						try {
+						if (_.isPlainObject(datum))
 							processedDatum = '\'' + JSON.stringify(datum) + '\'';
-						}
-						catch (e) {
+						else
 							processedDatum = '\'' + datum + '\'';
-						}
 					}
 				}
-
 			} else {
 				if (typeof datum === 'number')
 					processedDatum = datum;
 				else {
-					try {
+					if (_.isPlainObject(datum))
 						processedDatum = '\'' + JSON.stringify(datum) + '\'';
-					}
-					catch (e) {
-						processedDatum = '\'' + datum + '\'';
-					}
+					else
+						processedDatum = '\'' + String(datum) + '\'';
 				}
 			}
-
 		} else {
 			processedDatum = null;
 		}
@@ -139,11 +132,8 @@ platform.on('data', function (data) {
 					}
 				});
 			}
-
 		});
 	});
-
-
 });
 
 
@@ -151,9 +141,16 @@ platform.on('data', function (data) {
  * Listen for the ready event.
  */
 platform.once('ready', function (options) {
+	try {
+		parseFields = JSON.parse(options.fields);
+	}
+	catch (ex) {
+		platform.handleException(new Error('Invalid option parameter: fields. Must be a valid JSON String.'));
 
-	//try catch to capture parsing error in JSON.parse
-	parseFields = JSON.parse(options.fields);
+		return setTimeout(function () {
+			process.exit(1);
+		}, 2000);
+	}
 
 	async.forEachOf(parseFields, function (field, key, callback) {
 		if (field.source_field === undefined || field.source_field === null) {
@@ -186,7 +183,6 @@ platform.once('ready', function (options) {
 			}
 		};
 
-
 		connection = new sql.Connection(config, function (err) {
 			if (err) {
 				console.error('Error connecting to MsSQL.', err);
@@ -203,6 +199,4 @@ platform.once('ready', function (options) {
 			platform.handleException(err);
 		});
 	});
-
-
 });
