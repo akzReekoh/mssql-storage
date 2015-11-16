@@ -1,11 +1,10 @@
 'use strict';
 
-var platform = require('./platform'),
-	async	 = require('async'),
+var _        = require('lodash'),
 	sql      = require('mssql'),
+	async    = require('async'),
 	moment   = require('moment'),
-	_        = require('lodash'),
-	isJSON   = require('is-json'),
+	platform = require('./platform'),
 	tableName, parseFields, connection;
 
 /*
@@ -26,13 +25,10 @@ platform.on('data', function (data) {
 			if (field.data_type) {
 				try {
 					if (field.data_type === 'String') {
-
-						if (isJSON(datum))
-							processedDatum = '\'' + JSON.stringify(datum) + '\'';
+						if (_.isPlainObject(datum))
+							processedDatum = JSON.stringify(datum);
 						else
-							processedDatum = '\'' + String(datum) + '\'';
-
-
+							processedDatum = '\'' + datum + '\'';
 					} else if (field.data_type === 'Integer') {
 
 						var intData = parseInt(datum);
@@ -69,29 +65,31 @@ platform.on('data', function (data) {
 						var dtm = new Date(datum);
 
 						if (!isNaN(dtm.getTime()) && field.format !== undefined)
-								processedDatum = '\'' + moment(dtm).format(field.format) + '\'';
-							else
-								processedDatum = '\'' + datum + '\'';
+							processedDatum = '\'' + moment(dtm).format(field.format) + '\'';
+						else
+							processedDatum = '\'' + datum + '\'';
 
 					}
 				} catch (e) {
 					if (typeof datum === 'number')
 						processedDatum = datum;
-					else if (isJSON(datum))
-						processedDatum = JSON.stringify(datum);
-					else
-						processedDatum = '\'' + datum + '\'';
+					else {
+						if (_.isPlainObject(datum))
+							processedDatum = '\'' + JSON.stringify(datum) + '\'';
+						else
+							processedDatum = '\'' + datum + '\'';
+					}
 				}
-
 			} else {
 				if (typeof datum === 'number')
 					processedDatum = datum;
-				else if (isJSON(datum))
-					processedDatum = '\'' + JSON.stringify(datum) + '\'';
-				else
-					processedDatum = '\'' + datum + '\'';
+				else {
+					if (_.isPlainObject(datum))
+						processedDatum = '\'' + JSON.stringify(datum) + '\'';
+					else
+						processedDatum = '\'' + String(datum) + '\'';
+				}
 			}
-
 		} else {
 			processedDatum = null;
 		}
@@ -107,7 +105,7 @@ platform.on('data', function (data) {
 
 		callback();
 
-	}, function() {
+	}, function () {
 		var transaction = new sql.Transaction(connection);
 
 		transaction.begin(function (transErr) {
@@ -134,12 +132,8 @@ platform.on('data', function (data) {
 					}
 				});
 			}
-
 		});
 	});
-
-
-
 });
 
 
@@ -147,18 +141,25 @@ platform.on('data', function (data) {
  * Listen for the ready event.
  */
 platform.once('ready', function (options) {
+	try {
+		parseFields = JSON.parse(options.fields);
+	}
+	catch (ex) {
+		platform.handleException(new Error('Invalid option parameter: fields. Must be a valid JSON String.'));
 
-	//try catch to capture parsing error in JSON.parse
-	parseFields = JSON.parse(options.fields);
+		return setTimeout(function () {
+			process.exit(1);
+		}, 2000);
+	}
 
 	async.forEachOf(parseFields, function (field, key, callback) {
 		if (field.source_field === undefined || field.source_field === null) {
-			callback( new Error('Source field is missing for ' + key + ' in MsSQL Plugin'));
+			callback(new Error('Source field is missing for ' + key + ' in MsSQL Plugin'));
 		} else if (field.data_type && (field.data_type !== 'String' && field.data_type !== 'Integer' &&
 			field.data_type !== 'Float' && field.data_type !== 'Boolean' &&
 			field.data_type !== 'DateTime')) {
 			callback(new Error('Invalid Data Type for ' + key + ' allowed data types are (String, Integer, Float, Boolean, DateTime) in MsSQL Plugin'));
-		}else
+		} else
 			callback();
 	}, function (e) {
 
@@ -182,7 +183,6 @@ platform.once('ready', function (options) {
 			}
 		};
 
-
 		connection = new sql.Connection(config, function (err) {
 			if (err) {
 				console.error('Error connecting to MsSQL.', err);
@@ -199,7 +199,4 @@ platform.once('ready', function (options) {
 			platform.handleException(err);
 		});
 	});
-
-
-
 });

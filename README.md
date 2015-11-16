@@ -1,22 +1,27 @@
-# MsSQL Serve Storage
+# MsSQL Server Storage
+
+[![Build Status](https://travis-ci.org/Reekoh/mssql-storage.svg)](https://travis-ci.org/Reekoh/mssql-storage)
+![Dependencies](https://img.shields.io/david/Reekoh/mssql-storage.svg)
+![Dependencies](https://img.shields.io/david/dev/Reekoh/mssql-storage.svg)
+![Built With](https://img.shields.io/badge/built%20with-gulp-red.svg)
 
 MsSQL Storage Plugin for the Reekoh IoT Platform.
 
-**Assumptions:**
+## Assumptions
 
 1. Data would be in JSON format
 2. Data would be processed based on configuration format
 3. Conversions and formatting are done within Reekoh only minimal conversions are done in the plugin
 4. Field configuration is correctly done for the specified table
 
-**Process**
+## Process
 
 1. Data would be written directly to the MsSQL host specified
 2. Storage plugin will only write data using plain SQL-Insert statement
 3. All errors will be logged and no data should be written
 4. Data will be parsed accordingly based on field configuration
 
-**Field Configuration**
+### Field Configuration
 
 1. Input for this field is in JSON format {"(field_name)" : {"source_field" : "value", "data_type": "value", "format": "value"}}.
 2. field_name will be the name of the column in the MsSQL Table
@@ -61,7 +66,7 @@ MsSQL Storage Plugin for the Reekoh IoT Platform.
 }
 ```
 
-Sample Data:
+### Sample Data
 
 ```javascript
 {
@@ -75,7 +80,7 @@ Sample Data:
 }
 ```
 
-MS SQL Fields:
+### MS SQL Fields:
 
 Type Field mapping |
 -------------------|
