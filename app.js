@@ -203,6 +203,10 @@ platform.once('ready', function (options) {
 			if (err) {
 				console.error('Error connecting to MsSQL.', err);
 				platform.handleException(err);
+
+				return setTimeout(function () {
+					process.exit(1);
+				}, 2000);
 			} else {
 				platform.log('Connected to MsSQL.');
 				platform.notifyReady(); // Need to notify parent process that initialization of this plugin is done.
