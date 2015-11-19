@@ -1,10 +1,10 @@
 'use strict';
 
-var _        = require('lodash'),
-	sql      = require('mssql'),
-	async    = require('async'),
-	moment   = require('moment'),
-	platform = require('./platform'),
+var sql           = require('mssql'),
+	async         = require('async'),
+	moment        = require('moment'),
+	platform      = require('./platform'),
+	isPlainObject = require('lodash.isplainobject'),
 	tableName, parseFields, connection;
 
 /*
@@ -24,7 +24,7 @@ platform.on('data', function (data) {
 			if (field.data_type) {
 				try {
 					if (field.data_type === 'String') {
-						if (_.isPlainObject(datum))
+						if (isPlainObject(datum))
 							processedDatum = JSON.stringify(datum);
 						else
 							processedDatum = '\'' + datum + '\'';
@@ -73,7 +73,7 @@ platform.on('data', function (data) {
 					if (typeof datum === 'number')
 						processedDatum = datum;
 					else {
-						if (_.isPlainObject(datum))
+						if (isPlainObject(datum))
 							processedDatum = '\'' + JSON.stringify(datum) + '\'';
 						else
 							processedDatum = '\'' + datum + '\'';
@@ -83,7 +83,7 @@ platform.on('data', function (data) {
 				if (typeof datum === 'number')
 					processedDatum = datum;
 				else {
-					if (_.isPlainObject(datum))
+					if (isPlainObject(datum))
 						processedDatum = '\'' + JSON.stringify(datum) + '\'';
 					else
 						processedDatum = '\'' + String(datum) + '\'';
@@ -146,6 +146,7 @@ platform.on('close', function () {
 		console.error(error);
 		platform.handleException(error);
 		platform.notifyClose();
+		d.exit();
 	});
 
 	d.run(function () {
