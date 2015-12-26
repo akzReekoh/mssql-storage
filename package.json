@@ -1,7 +1,7 @@
 {
   "name": "mssql-storage",
   "description": "MsSQL Storage Plugin for Reekoh IoT Platform.",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "author": "Reekoh, Inc.",
   "main": "app.js",
   "scripts": {
